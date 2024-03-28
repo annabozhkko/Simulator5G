@@ -22,10 +22,10 @@ import static com.example.backend.data.SimulatorDataStorage.*;
 @RequestScope
 public class SimulatorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SimulatorController.class);
-    private static final int THREAD_COUNT = 2;
+    private final Integer threadCount = 8;
 
     private final BrazenhemLineDrawer lineDrawer = new BrazenhemLineDrawer();
-    private final ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
+    private final ExecutorService executor = Executors.newFixedThreadPool(threadCount);
     private CountDownLatch latch;
 
     public void addAntenna(Antenna antenna) {
@@ -40,10 +40,10 @@ public class SimulatorService {
         long start = System.currentTimeMillis();
         double[] blockPowerArray = new double[BLOCK_SIZE * FIELD_SIZE];
 
-        latch = new CountDownLatch(THREAD_COUNT);
+        latch = new CountDownLatch(threadCount);
 
-        for (int threadNumber = 0; threadNumber < THREAD_COUNT; ++threadNumber) {
-            int x = blockNumber * BLOCK_SIZE + threadNumber * (BLOCK_SIZE / THREAD_COUNT);
+        for (int threadNumber = 0; threadNumber < threadCount; ++threadNumber) {
+            int x = blockNumber * BLOCK_SIZE + threadNumber * (BLOCK_SIZE / threadCount);
             executor.submit(() -> getRowPower(x, blockPowerArray));
         }
 
@@ -67,7 +67,7 @@ public class SimulatorService {
             int antennaY = antenna.getY();
             int antennaDirection = antenna.getDirection();
 
-            for (int x = startX; x < startX + BLOCK_SIZE / THREAD_COUNT; ++x) {
+            for (int x = startX; x < startX + BLOCK_SIZE / threadCount; ++x) {
                 for(int y = 0; y < FIELD_SIZE; ++y) {
                     if (wallsImage.getRGB(x, y) == Color.BLACK.getRGB()) {
                         continue;
